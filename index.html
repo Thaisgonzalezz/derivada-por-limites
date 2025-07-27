@@ -4,37 +4,38 @@ import StepExplanation from "./components/StepExplanation";
 import Examples from "./components/Examples";
 import { calcularDerivadaPorLimite } from "./utils/derivativeLimit";
 import "katex/dist/katex.min.css";
+import "./App.css"; // Opcional: tus estilos generales
 
 export default function App() {
   const [funcion, setFuncion] = useState("");
   const [pasos, setPasos] = useState([]);
   const [error, setError] = useState("");
-  
+
   const handleCalcular = (fn) => {
     setError("");
+    setFuncion(fn);
     try {
       const resultado = calcularDerivadaPorLimite(fn);
-      setFuncion(fn);
-      setPasos(resultado.pasos);
+      setPasos(resultado.pasos || []);
     } catch (e) {
       setError("Hubo un error al calcular la derivada. Revisa la función ingresada.");
       setPasos([]);
     }
   };
 
-        return (
-          <div className="container">
-            <h1>Calculadora de Derivadas por el método del Límite</h1>
-            <InputFunction onCalcular={handleCalcular} />
-            <Examples onExample={handleCalcular} />
-            {error && <div className="error">{error}</div>}
-            {pasos.length > 0 && (
-              <StepExplanation funcion={funcion} pasos={pasos} />
-            )}
+  return (
+    <div className="container">
+      <h1>Calculadora de Derivadas por el método del Límite</h1>
+      <InputFunction onCalcular={handleCalcular} />
+      <Examples onExample={handleCalcular} />
+      {error && <div className="error">{error}</div>}
+      {pasos.length > 0 && (
+        <StepExplanation funcion={funcion} pasos={pasos} />
+      )}
     </div>
   );
-}
-import React, { useState } from "react";
+} 
+          import React, { useState } from "react";
 
 export default function InputFunction({ onCalcular }) {
   const [input, setInput] = useState("");
@@ -54,14 +55,15 @@ export default function InputFunction({ onCalcular }) {
           type="text"
           placeholder="Ejemplo: x^2 + 3*x"
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={e => setInput(e.target.value)}
         />
       </label>
       <button type="submit">Calcular derivada</button>
     </form>
   );
 }
-import React from "react";
+
+          import React from "react";
 
 const ejemplos = [
   "x^2",
@@ -75,12 +77,69 @@ export default function Examples({ onExample }) {
   return (
     <div className="examples">
       <p>Ejemplos rápidos:</p>
-      {ejemplos.map((ej, idx) => (
-        <button key={idx} onClick={() => onExample(ej)}>
-          f(x) = {ej}
-        </button>
-      ))}
+      <div className="examples-list">
+        {ejemplos.map((ej, idx) => (
+          <button key={idx} onClick={() => onExample(ej)}>
+            f(x) = {ej}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
+
+          import React from "react";
+import "katex/dist/katex.min.css";
+import { BlockMath } from "react-katex";
+
+/**
+ * pasos: array de strings con la explicación paso a paso en formato KaTeX o texto plano.
+ * funcion: string, función original.
+ */
+export default function StepExplanation({ funcion, pasos }) {
+  return (
+    <div className="step-explanation">
+      <h2>Resolución paso a paso</h2>
+      <div>
+        <strong>Función:</strong>{" "}
+        <BlockMath math={`f(x) = ${funcion}`} />
+      </div>
+      <ol>
+        {pasos.map((paso, idx) => (
+          <li key={idx}>
+            {/* Si el paso es KaTeX, mostrarlo con BlockMath, si no, como texto */}
+            <BlockMath math={paso} />
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+.container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #f8f8f8;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px #0001;
+}
+
+.input-form {
+  margin-bottom: 1.5rem;
+}
+
+.examples {
+  margin-bottom: 1.5rem;
+}
+
+.examples-list button {
+  margin: 0.25rem;
+}
+
+.error {
+  color: #b00;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+          
 
