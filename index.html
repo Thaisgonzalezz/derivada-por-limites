@@ -1,0 +1,86 @@
+import React, { useState } from "react";
+import InputFunction from "./components/InputFunction";
+import StepExplanation from "./components/StepExplanation";
+import Examples from "./components/Examples";
+import { calcularDerivadaPorLimite } from "./utils/derivativeLimit";
+import "katex/dist/katex.min.css";
+
+export default function App() {
+  const [funcion, setFuncion] = useState("");
+  const [pasos, setPasos] = useState([]);
+  const [error, setError] = useState("");
+  
+  const handleCalcular = (fn) => {
+    setError("");
+    try {
+      const resultado = calcularDerivadaPorLimite(fn);
+      setFuncion(fn);
+      setPasos(resultado.pasos);
+    } catch (e) {
+      setError("Hubo un error al calcular la derivada. Revisa la función ingresada.");
+      setPasos([]);
+    }
+  };
+
+        return (
+          <div className="container">
+            <h1>Calculadora de Derivadas por el método del Límite</h1>
+            <InputFunction onCalcular={handleCalcular} />
+            <Examples onExample={handleCalcular} />
+            {error && <div className="error">{error}</div>}
+            {pasos.length > 0 && (
+              <StepExplanation funcion={funcion} pasos={pasos} />
+            )}
+    </div>
+  );
+}
+import React, { useState } from "react";
+
+export default function InputFunction({ onCalcular }) {
+  const [input, setInput] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (input.trim()) {
+      onCalcular(input.trim());
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="input-form">
+      <label>
+        Ingresa una función f(x):
+        <input
+          type="text"
+          placeholder="Ejemplo: x^2 + 3*x"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+        />
+      </label>
+      <button type="submit">Calcular derivada</button>
+    </form>
+  );
+}
+import React from "react";
+
+const ejemplos = [
+  "x^2",
+  "3*x + 2",
+  "sin(x)",
+  "e^x",
+  "1/x",
+];
+
+export default function Examples({ onExample }) {
+  return (
+    <div className="examples">
+      <p>Ejemplos rápidos:</p>
+      {ejemplos.map((ej, idx) => (
+        <button key={idx} onClick={() => onExample(ej)}>
+          f(x) = {ej}
+        </button>
+      ))}
+    </div>
+  );
+}
+
