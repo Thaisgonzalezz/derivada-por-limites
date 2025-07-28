@@ -1,145 +1,64 @@
-import React, { useState } from "react";
-import InputFunction from "./components/InputFunction";
-import StepExplanation from "./components/StepExplanation";
-import Examples from "./components/Examples";
-import { calcularDerivadaPorLimite } from "./utils/derivativeLimit";
-import "katex/dist/katex.min.css";
-import "./App.css"; // Opcional: tus estilos generales
-
-export default function App() {
-  const [funcion, setFuncion] = useState("");
-  const [pasos, setPasos] = useState([]);
-  const [error, setError] = useState("");
-
-  const handleCalcular = (fn) => {
-    setError("");
-    setFuncion(fn);
-    try {
-      const resultado = calcularDerivadaPorLimite(fn);
-      setPasos(resultado.pasos || []);
-    } catch (e) {
-      setError("Hubo un error al calcular la derivada. Revisa la función ingresada.");
-      setPasos([]);
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Derivada por Definición de Límite</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 30px;
+      background: #f0f0f0;
     }
-  };
-
-  return (
-    <div className="container">
-      <h1>Calculadora de Derivadas por el método del Límite</h1>
-      <InputFunction onCalcular={handleCalcular} />
-      <Examples onExample={handleCalcular} />
-      {error && <div className="error">{error}</div>}
-      {pasos.length > 0 && (
-        <StepExplanation funcion={funcion} pasos={pasos} />
-      )}
-    </div>
-  );
-} 
-          import React, { useState } from "react";
-
-export default function InputFunction({ onCalcular }) {
-  const [input, setInput] = useState("");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (input.trim()) {
-      onCalcular(input.trim());
+    input, button {
+      font-size: 1em;
+      padding: 6px;
     }
-  };
+    pre {
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
 
-  return (
-    <form onSubmit={handleSubmit} className="input-form">
-      <label>
-        Ingresa una función f(x):
-        <input
-          type="text"
-          placeholder="Ejemplo: x^2 + 3*x"
-          value={input}
-          onChange={e => setInput(e.target.value)}
-        />
-      </label>
-      <button type="submit">Calcular derivada</button>
-    </form>
-  );
-}
+  <h1>📘 Derivada usando definición de límite</h1>
+  <p>Usa solo funciones como <code>x*x</code>, <code>Math.sin(x)</code>, <code>Math.exp(x)</code>, etc.</p>
 
-          import React from "react";
+  <label>f(x) = </label>
+  <input type="text" id="funcion" value="x*x + 3*x" size="30" />
+  <br><br>
+  <button onclick="resolver()">Calcular derivada</button>
 
-const ejemplos = [
-  "x^2",
-  "3*x + 2",
-  "sin(x)",
-  "e^x",
-  "1/x",
-];
+  <h3>Resultado paso a paso:</h3>
+  <pre id="resultado">Esperando entrada...</pre>
 
-export default function Examples({ onExample }) {
-  return (
-    <div className="examples">
-      <p>Ejemplos rápidos:</p>
-      <div className="examples-list">
-        {ejemplos.map((ej, idx) => (
-          <button key={idx} onClick={() => onExample(ej)}>
-            f(x) = {ej}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
+  <script>
+    function resolver() {
+      const expr = document.getElementById('funcion').value;
+      const h = 0.000001;
+      const x = 1; // punto para evaluar
 
-          import React from "react";
-import "katex/dist/katex.min.css";
-import { BlockMath } from "react-katex";
+      try {
+        const f = (x) => eval(expr);
+        const fx = f(x);
+        const fxh = f(x + h);
+        const diferencia = (fxh - fx) / h;
 
-/**
- * pasos: array de strings con la explicación paso a paso en formato KaTeX o texto plano.
- * funcion: string, función original.
- */
-export default function StepExplanation({ funcion, pasos }) {
-  return (
-    <div className="step-explanation">
-      <h2>Resolución paso a paso</h2>
-      <div>
-        <strong>Función:</strong>{" "}
-        <BlockMath math={`f(x) = ${funcion}`} />
-      </div>
-      <ol>
-        {pasos.map((paso, idx) => (
-          <li key={idx}>
-            {/* Si el paso es KaTeX, mostrarlo con BlockMath, si no, como texto */}
-            <BlockMath math={paso} />
-          </li>
-        ))}
-      </ol>
-    </div>
-  );
-}
-.container {
-  max-width: 600px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background: #f8f8f8;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px #0001;
-}
+        let salida = `f(x) = ${expr}\n`;
+        salida += `Paso 1: f(x + h) = ${expr.replaceAll("x", "(x+h)")}\n`;
+        salida += `Paso 2: f(x + h) - f(x) = ${fxh.toFixed(6)} - ${fx.toFixed(6)}\n`;
+        salida += `Paso 3: [(f(x + h) - f(x)) / h] ≈ (${fxh.toFixed(6)} - ${fx.toFixed(6)}) / ${h}\n`;
+        salida += `Paso 4: Derivada ≈ ${diferencia.toFixed(6)}\n\n`;
+        salida += `✅ Resultado: f'(1) ≈ ${diferencia.toFixed(6)}`;
 
-.input-form {
-  margin-bottom: 1.5rem;
-}
+        document.getElementById('resultado').innerText = salida;
+      } catch (e) {
+        document.getElementById('resultado').innerText = '⚠️ Error al evaluar la función. Usa solo "x" como variable.';
+      }
+    }
+  </script>
 
-.examples {
-  margin-bottom: 1.5rem;
-}
-
-.examples-list button {
-  margin: 0.25rem;
-}
-
-.error {
-  color: #b00;
-  margin-bottom: 1rem;
-  font-weight: bold;
-}
-          
-
+</body>
+</html>
